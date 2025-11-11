@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Cafetería</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            background: #f3e9dd;
+            display: flex;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: #4e342e;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.25);
+            animation: fadeInLeft 0.6s ease-out;
+        }
+        .sidebar h3 {
+            font-weight: 700;
+        }
+        .sidebar a {
+            display: block;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            text-decoration: none;
+            color: #f5f0eb;
+            transition: 0.25s;
+        }
+        .sidebar a:hover {
+            background: #6d4c41;
+            transform: translateX(5px);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            margin-left: 280px;
+            padding: 40px;
+            width: 100%;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .card-premium {
+            border-radius: 20px;
+            padding: 25px;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            animation: fadeInUp 0.7s ease-out;
+        }
+        .card-premium:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 26px rgba(0,0,0,0.15);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            border-left: 5px solid #6d4c41;
+            padding-left: 12px;
+            color: #4e342e;
+        }
+        .section-title-danger {
+            border-color: #b71c1c !important;
+            color: #b71c1c;
+        }
+
+        .list-group-item {
+            border-radius: 12px !important;
+            margin-bottom: 10px;
+            padding: 14px 18px;
+            transition: 0.25s;
+        }
+        .list-group-item:hover {
+            background-color: #f7eee7;
+            transform: translateX(6px);
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h3 class="mb-4"><i class="bi bi-cup-hot"></i> Cafetería</h3>
+    <a href="#"><i class="bi bi-speedometer2"></i> Panel Principal</a>
+    <a href="{{ url_for('ver_productos') }}"><i class="bi bi-cup-straw"></i> Bebidas & Productos</a>
+    <a href="{{ url_for('ver_empleados') }}"><i class="bi bi-person-badge"></i> Baristas</a>
+    <a href="{{ url_for('ver_clientes') }}"><i class="bi bi-person-heart"></i> Clientes</a>
+    <a href="{{ url_for('ver_proveedores') }}"><i class="bi bi-truck"></i> Proveedores</a>
+    <a href="{{ url_for('ver_ventas') }}"><i class="bi bi-currency-dollar"></i> Ventas</a>
+    <hr class="text-light">
+    <a href="{{ url_for('admin_ver_usuarios') }}" class="text-danger"><i class="bi bi-person-lock"></i> Usuarios (Admin)</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+    <h1 class="fw-bold mb-4"><i class="bi bi-emoji-smile"></i> Panel de Administración de Cafetería</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card-premium mb-4">
+        <h4 class="section-title"><i class="bi bi-basket"></i> Gestión de Productos</h4>
+        <p class="text-muted">Administra bebidas, postres, snacks y más.</p>
+
+        <div class="list-group">
+            <a href="{{ url_for('ver_productos') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cup-hot"></i> Bebidas & Preparaciones</span>
+                <span class="badge bg-primary rounded-pill">{{ stats.get('productos', 'N/A') }}</span>
+            </a>
+            <a href="{{ url_for('ver_empleados') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-badge-fill"></i> Baristas</span>
+                <span class="badge bg-primary rounded-pill">{{ stats.get('empleados', 'N/A') }}</span>
+            </a>
+            <a href="{{ url_for('ver_clientes') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-heart"></i> Clientes Frecuentes</span>
+                <span class="badge bg-primary rounded-pill">{{ stats.get('clientes', 'N/A') }}</span>
+            </a>
+            <a href="{{ url_for('ver_proveedores') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-truck"></i> Proveedores de Café</span>
+                <span class="badge bg-primary rounded-pill">{{ stats.get('proveedores', 'N/A') }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="card-premium mb-4">
+        <h4 class="section-title"><i class="bi bi-cash"></i> Ventas</h4>
+        <div class="list-group">
+            <a href="{{ url_for('ver_ventas') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-currency-exchange"></i> Reporte de Ventas</span>
+                <span class="badge bg-success rounded-pill">{{ stats.get('ventas', 'N/A') }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="card-premium mb-4 border-danger">
+        <h4 class="section-title section-title-danger text-danger"><i class="bi bi-exclamation-triangle"></i> Zona Peligrosa (Admin)</h4>
+        <p class="text-muted">Gestión de cuentas de acceso y datos sensibles.</p>
+
+        <div class="list-group">
+            <a href="{{ url_for('admin_ver_usuarios') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-danger">
+                <span><i class="bi bi-person-lock"></i> Gestionar Usuarios (Login)</span>
+                <span class="badge bg-danger rounded-pill">{{ stats.get('usuarios', 'N/A') }}</span>
+            </a>
+        </div>
+    </div>
+
+    <a href="{{ url_for('menu') }}" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Volver al Menú Principal</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

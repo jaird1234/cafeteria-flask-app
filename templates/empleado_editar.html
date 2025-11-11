@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar Empleado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f3ebe3;
+            font-family: "Poppins", sans-serif;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #fff;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: #5a3825;
+        }
+
+        label {
+            font-weight: 600;
+            color: #5a3825;
+        }
+
+        .btn-save {
+            background-color: #7a4e33;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: #fff;
+            transition: 0.3s;
+        }
+
+        .btn-save:hover {
+            background-color: #5e3b27;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+
+        .top-bar {
+            background: #7a4e33;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar shadow-sm">☕ Editar Empleado</div>
+
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm p-4">
+
+                    <h2 class="card-title mb-3">Actualizar Información del Empleado</h2>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" value="{{ empleado.nombre }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="puesto" class="form-label">Puesto</label>
+                            <input type="text" class="form-control" id="puesto" name="puesto" value="{{ empleado.puesto }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha de Contratación</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha_contratacion" value="{{ empleado.fecha_contratacion }}" required>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-save">💾 Guardar Cambios</button>
+                            <a href="{{ url_for('ver_empleados') }}" class="btn btn-secondary btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

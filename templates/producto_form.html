@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% if producto %}Editar{% else %}Crear{% endif %} Producto</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f3ebe3;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card {
+            background: #ffffffdd !important;
+            backdrop-filter: blur(6px);
+            border-radius: 18px;
+            border: 1px solid #e7d9cc;
+            box-shadow: 0px 6px 18px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        h2, h5, label {
+            color: #4b2e1e;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #ccb8a9;
+            background-color: #fffdfb;
+        }
+        .form-control:focus {
+            border-color: #6f4e37;
+            box-shadow: 0 0 4px rgba(111, 78, 55, 0.4);
+        }
+
+        .btn-primary {
+            background-color: #6f4e37;
+            border-color: #6f4e37;
+            border-radius: 12px;
+        }
+        .btn-primary:hover {
+            background-color: #5b3f2c;
+            border-color: #5b3f2c;
+        }
+
+        .btn-secondary {
+            border-radius: 12px;
+        }
+
+        .form-check-input:checked {
+            background-color: #6f4e37;
+            border-color: #6f4e37;
+        }
+
+        /* Tarjetas dinámicas */
+        #campos_perecedero, #campos_no_perecedero {
+            background: #ffffffaa;
+            border: 1px solid #e7d9cc;
+            backdrop-filter: blur(4px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                
+                <div class="card shadow-sm p-4">
+                    <div class="card-body">
+
+                        <h2 class="card-title mb-4">
+                            {% if producto %}Editar{% else %}Crear{% endif %} Producto
+                        </h2>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre del Producto</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre"
+                                       value="{{ producto.nombre if producto else '' }}" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="precio_venta" class="form-label">Precio</label>
+                                    <input type="number" class="form-control" id="precio_venta" name="precio_venta"
+                                           step="0.01" min="0"
+                                           value="{{ producto.precio_venta if producto else '' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="2">
+                                    {{ producto.descripcion if producto else '' }}
+                                </textarea>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Producto</label>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_producto" id="tipo_normal"
+                                           value="normal" onchange="toggleTipoProducto()"
+                                           {% if producto and not producto.perecedero and not producto.no_perecedero %}checked{% endif %}
+                                           {% if not producto %}checked{% endif %}>
+                                    <label class="form-check-label" for="tipo_normal">Normal (ej. Bebida)</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_producto" id="tipo_perecedero"
+                                           value="perecedero" onchange="toggleTipoProducto()"
+                                           {% if producto and producto.perecedero %}checked{% endif %}>
+                                    <label class="form-check-label" for="tipo_perecedero">Perecedero (ej. Pastel)</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_producto" id="tipo_no_perecedero"
+                                           value="no_perecedero" onchange="toggleTipoProducto()"
+                                           {% if producto and producto.no_perecedero %}checked{% endif %}>
+                                    <label class="form-check-label" for="tipo_no_perecedero">No Perecedero (ej. Taza)</label>
+                                </div>
+                            </div>
+
+                            <!-- PERECEDERO -->
+                            <div id="campos_perecedero"
+                                 class="p-3 rounded mb-3"
+                                 style="display: {% if producto and producto.perecedero %}block{% else %}none{% endif %};">
+                                <h5 class="mb-3">Detalles de Perecedero</h5>
+
+                                <div class="mb-3">
+                                    <label for="fecha_caducidad" class="form-label">Fecha de Caducidad</label>
+                                    <input type="date" class="form-control" id="fecha_caducidad" name="fecha_caducidad"
+                                           value="{{ producto.perecedero.fecha_caducidad if producto and producto.perecedero else '' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="condiciones_almacenamiento" class="form-label">Condiciones de Almacenamiento</label>
+                                    <input type="text" class="form-control" id="condiciones_almacenamiento" name="condiciones_almacenamiento"
+                                           value="{{ producto.perecedero.condiciones_almacenamiento if producto and producto.perecedero else '' }}">
+                                </div>
+                            </div>
+
+                            <!-- NO PERECEDERO -->
+                            <div id="campos_no_perecedero"
+                                 class="p-3 rounded mb-3"
+                                 style="display: {% if producto and producto.no_perecedero %}block{% else %}none{% endif %};">
+                                <h5 class="mb-3">Detalles de No Perecedero</h5>
+
+                                <div class="mb-3">
+                                    <label for="lote_fabricacion" class="form-label">Lote de Fabricación</label>
+                                    <input type="text" class="form-control" id="lote_fabricacion" name="lote_fabricacion"
+                                           value="{{ producto.no_perecedero.lote_fabricacion if producto and producto.no_perecedero else '' }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="garantia_meses" class="form-label">Garantía (en meses)</label>
+                                    <input type="number" class="form-control" id="garantia_meses" name="garantia_meses" min="0"
+                                           value="{{ producto.no_perecedero.garantia_meses if producto and producto.no_perecedero else 0 }}">
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- PROVEEDORES -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Proveedores de este Producto</label>
+
+                                <div class="p-3 border rounded" style="max-height: 200px; overflow-y: auto;">
+                                    {% if proveedores %}
+                                        {% for proveedor in proveedores %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="proveedores"
+                                                   value="{{ proveedor.id_proveedor }}"
+                                                   id="prov-{{ proveedor.id_proveedor }}"
+                                                   {% if producto and proveedor in producto.proveedores %}checked{% endif %}>
+                                            <label class="form-check-label" for="prov-{{ proveedor.id_proveedor }}">
+                                                {{ proveedor.nombre }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted">No hay proveedores registrados. Crea uno primero.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary mt-3">
+                                {% if producto %}Guardar Cambios{% else %}Crear Producto{% endif %}
+                            </button>
+
+                            <a href="{{ url_for('ver_productos') }}" class="btn btn-secondary mt-3">
+                                Cancelar
+                            </a>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTipoProducto() {
+            document.getElementById('campos_perecedero').style.display = 'none';
+            document.getElementById('campos_no_perecedero').style.display = 'none';
+
+            if (document.getElementById('tipo_perecedero').checked) {
+                document.getElementById('campos_perecedero').style.display = 'block';
+            }
+            else if (document.getElementById('tipo_no_perecedero').checked) {
+                document.getElementById('campos_no_perecedero').style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleTipoProducto);
+    </script>
+
+</body>
+</html>

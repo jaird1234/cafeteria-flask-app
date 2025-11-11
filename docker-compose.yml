@@ -1,0 +1,34 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      # --- NUEVAS CREDENCIALES ---
+      - POSTGRES_USER=admin_cafe
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_DB=cafeteria_db
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14-alpine
+    volumes:
+      # Carga el script SQL
+      - ./db_schema.sql:/docker-entrypoint-initdb.d/init.sql
+      # --- NUEVO VOLUMEN ---
+      - postgres_data_v3:/var/lib/postgresql/data/
+    environment:
+      # --- NUEVAS CREDENCIALES ---
+      - POSTGRES_USER=admin_cafe
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_DB=cafeteria_db
+    ports:
+      - "5433:5432"
+
+volumes:
+  # --- NUEVO VOLUMEN ---
+  postgres_data_v3:

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mi Perfil - Cafetería</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(rgba(243, 235, 227, 0.88), rgba(243, 235, 227, 0.88)),
+            url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop') no-repeat center/cover;
+            font-family: "Poppins", sans-serif;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #ffffffdd;
+            backdrop-filter: blur(6px);
+            border: 2px solid #e7d9cc;
+            padding: 25px;
+            animation: slideUp 0.7s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(25px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        h2, h4 {
+            color: #4b2e1e;
+            font-weight: 700;
+        }
+
+        .list-group-item {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            padding: 14px;
+        }
+
+        table {
+            background: #ffffffbb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead.table-dark {
+            background: #4b2e1e !important;
+        }
+
+        .btn-warning, .btn-outline-danger, .btn-primary {
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="card-title">¡Hola, {{ cliente.nombre }}!</h2>
+                        <div>
+                            <a href="{{ url_for('editar_perfil') }}" class="btn btn-warning">
+                                <i class="bi bi-pencil-fill"></i> Editar Perfil
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger ms-2">Cerrar Sesión</a>
+                        </div>
+                    </div>
+
+                    <p>Este es tu portal de cliente. Aquí puedes ver tus datos y tu historial de compras.</p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <h4 class="mt-4">Datos Personales</h4>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>Email:</strong> {{ cliente.email }}</li>
+                        <li class="list-group-item"><strong>Teléfono:</strong> {{ cliente.telefono if cliente.telefono else 'No registrado' }}</li>
+
+                        {% if cliente.frecuente %}
+                        <li class="list-group-item">
+                            <strong>Tipo de Cliente:</strong>
+                            <span class="badge bg-success">Cliente Frecuente</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Puntos Acumulados:</strong>
+                            <span class="fw-bold">{{ cliente.frecuente.puntos_acumulados }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item">
+                            <strong>Tipo de Cliente:</strong>
+                            <span class="badge bg-secondary">Cliente Ocasional</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <h4 class="mt-4">Dirección</h4>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">
+                            <strong>Calle y Número:</strong>
+                            {% if cliente.calle %}
+                                {{ cliente.calle }} {{ cliente.numero_exterior if cliente.numero_exterior else 'S/N' }}
+                            {% else %}
+                                <span class="text-muted">No registrada</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item"><strong>Colonia:</strong> {{ cliente.colonia if cliente.colonia else 'No registrada' }}</li>
+                        <li class="list-group-item"><strong>Código Postal:</strong> {{ cliente.codigo_postal if cliente.codigo_postal else 'No registrado' }}</li>
+                    </ul>
+
+                    <hr>
+
+                    <h4 class="mt-4">Historial de Compras</h4>
+                    {% if ventas %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID Venta</th>
+                                    <th>Fecha</th>
+                                    <th>Monto Total</th>
+                                    <th>Atendido por</th>
+                                    <th>Ver Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venta in ventas %}
+                                <tr>
+                                    <td>{{ venta.id_venta }}</td>
+                                    <td>{{ venta.fecha_hora.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>${{ "%.2f"|format(venta.monto_total) }}</td>
+                                    <td>{{ venta.empleado.nombre }}</td>
+                                    <td>
+                                        <a href="{{ url_for('ver_detalle_venta', id=venta.id_venta) }}" class="btn btn-primary btn-sm">Ver</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No tienes compras registradas.</p>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

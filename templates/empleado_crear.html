@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contratar Empleado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f3ebe3;
+            font-family: "Poppins", sans-serif;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            border-radius: 20px;
+            background: #fff;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: #5a3825;
+        }
+
+        h4 {
+            color: #6b3e28;
+            font-weight: 600;
+        }
+
+        .btn-success {
+            background-color: #7a4e33 !important;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+
+        .btn-success:hover {
+            background-color: #633f29 !important;
+        }
+
+        .btn-secondary {
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #5a3825;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+        }
+
+        .top-bar {
+            background: #7a4e33;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar shadow-sm">☕ Contratar Nuevo Empleado</div>
+
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm p-4">
+
+                    <h2 class="card-title mb-2">Formulario de Contratación</h2>
+                    <p class="text-muted">Crearás un registro de Empleado y una cuenta para iniciar sesión.</p>
+
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+
+                    <form method="POST">
+                        <h4 class="mt-4">Datos del Empleado</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombre" class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="puesto" class="form-label">Puesto</label>
+                                <input type="text" class="form-control" id="puesto" name="puesto" value="Barista" required>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4">Datos de la Cuenta</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email (usuario)</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Contraseña Temporal</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="rol" class="form-label">Rol en el Sistema</label>
+                            <select class="form-select" id="rol" name="rol" required>
+                                <option value="barista" selected>Barista</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">✅ Contratar</button>
+                            <a href="{{ url_for('ver_empleados') }}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
