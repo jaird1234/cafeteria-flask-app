@@ -9,32 +9,67 @@ from sqlalchemy import exc, Table
 from sqlalchemy.orm import sessionmaker
 from functools import wraps 
 
+from psycopg2 import errors
 
-# 1. CONFIGURACIÓN INICIAL
-load_dotenv()
+
+
+# 1. CONFIGURACIÓN INICIAL (MODIFICADA PARA RENDER)
+
+load_dotenv() # Carga .env localmente 
 app = Flask(__name__)
 
-# Credenciales de la BD
-DB_USER = os.environ.get('POSTGRES_USER', 'admin_cafe')
-DB_PASS = os.environ.get('POSTGRES_PASSWORD', 'admin123')
-DB_NAME = os.environ.get('POSTGRES_DB', 'cafeteria_db')
-DB_HOST = os.environ.get('DB_HOST', 'db')
-DB_PORT = '5432'
 
-# URLs de conexión DCL
-ADMIN_DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-BARISTA_DB_URL = f"postgresql://app_barista:barista_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-GERENTE_DB_URL = f"postgresql://app_gerente:gerente_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-CLIENTE_DB_URL = f"postgresql://app_cliente:cliente_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.environ.get('DATABASE_URL')
+BINDS = {}
 
-app.config['SECRET_KEY'] = 'esta-es-una-llave-secreta-muy-larga-y-dificil-de-adivinar'
-app.config['SQLALCHEMY_DATABASE_URI'] = ADMIN_DB_URL 
-app.config['SQLALCHEMY_BINDS'] = {
-    'barista': BARISTA_DB_URL,
-    'gerente': GERENTE_DB_URL,
-    'cliente': CLIENTE_DB_URL
-}
+if not DATABASE_URL:
+    # SI NO ESTAMOS EN RENDER (estamos local), usamos la config de docker-compose
+    print("ADVERTENCIA: No se encontró DATABASE_URL. Usando configuración local de Docker.")
+    DB_USER = os.environ.get('POSTGRES_USER', 'admin_cafe')
+    DB_PASS = os.environ.get('POSTGRES_PASSWORD', 'admin123')
+    DB_NAME = os.environ.get('POSTGRES_DB', 'cafeteria_db')
+    DB_HOST = os.environ.get('DB_HOST', 'db')
+    DB_PORT = '5432'
+    
+    # Guardamos las URLs locales 
+    ADMIN_DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    BARISTA_DB_URL = f"postgresql://app_barista:barista_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    GERENTE_DB_URL = f"postgresql://app_gerente:gerente_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    CLIENTE_DB_URL = f"postgresql://app_cliente:cliente_pass@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    # binds locales para que el DCL funcione 
+    BINDS = {
+        'barista': BARISTA_DB_URL,
+        'gerente': GERENTE_DB_URL,
+        'cliente': CLIENTE_DB_URL
+    }
+
+else:
+    # SI SÍ ESTAMOS EN RENDER, usamos la DATABASE_URL que nos da para TODO
+    print("Detectada DATABASE_URL. Conectando a la BD de Render...")
+    
+    ADMIN_DB_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+    
+
+    BINDS = {
+        'barista': ADMIN_DB_URL,
+        'gerente': ADMIN_DB_URL,
+        'cliente': ADMIN_DB_URL
+    }
+
+
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'esta-es-una-llave-secreta-muy-larga-y-dificil-de-adivinar')
+
+# Configuración principal
+app.config['SQLALCHEMY_DATABASE_URI'] = ADMIN_DB_URL
+
+
+app.config['SQLALCHEMY_BINDS'] = BINDS
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -43,7 +78,7 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Por favor, inicia sesión para acceder.'
 login_manager.login_message_category = 'info'
 
-# --- DECORADOR PARA RUTAS DE ADMIN ---
+# --- RUTAS DE ADMIN ---
 def admin_required(f):
     """Decorador para rutas exclusivas de 'admin'"""
     @wraps(f)
@@ -55,7 +90,11 @@ def admin_required(f):
     return decorated_function
 
 
+
 # 2. MODELOS DE BASE DE DATOS
+
+
+# (Aquí va todo el código de Modelos: Usuario, Empleado, Cliente, etc.)
 
 
 # Tabla de asociación
@@ -171,6 +210,7 @@ class TelefonoProveedor(db.Model):
     telefono = db.Column(db.String(20), primary_key=True)
 
 
+
 # 3. MANEJO DE SESIÓN Y DCL
 
 
@@ -191,10 +231,15 @@ def get_session_dcl():
         Session = sessionmaker(bind=engine)
         return Session()
     else:
+        # Si el bind no existe (como en Render), usa la sesión principal
         return db.session
 
 
+
 # 4. RUTAS DE AUTENTICACIÓN Y MENÚ
+
+
+# (Aquí va todo el código de Rutas: /login, /registro, /menu, etc.)
 
 
 @app.route('/')
@@ -249,6 +294,7 @@ def registro():
         try:
 
             # Obtenemos la sesión 'cliente' directamente.
+         
             engine = db.get_engine(bind_key='cliente')
             Session = sessionmaker(bind=engine)
             db_dcl = Session()
@@ -327,7 +373,7 @@ def mi_perfil():
             flash('No se pudo encontrar tu registro de cliente.', 'danger')
             return redirect(url_for('logout'))
 
-        # Consulta de ventas del cliente (filtrada por Python/App logic)
+        # Consulta de ventas del cliente 
         ventas = db_dcl.query(Venta).filter_by(id_cliente=current_user.id_cliente).order_by(Venta.fecha_hora.desc()).all()
         
         return render_template('perfil_cliente.html', cliente=cliente, ventas=ventas)
@@ -377,6 +423,7 @@ def editar_perfil():
 
     db_dcl.close() # Cerrar sesión antes de redirigir
     return render_template('editar_perfil.html', cliente=cliente)
+
 
 # 5. RUTAS DE OPERACIONES (POS, VENTAS)
 
@@ -552,7 +599,10 @@ def ver_detalle_venta(id):
     finally:
         db_dcl.close()
 
+
 # 6. RUTAS CRUD DE EMPLEADOS (GERENTE)
+
+
 
 
 @app.route('/empleados')
@@ -700,7 +750,11 @@ def borrar_empleado(id):
     return redirect(url_for('ver_empleados'))
 
 
-# 7. RUTAS CRUD DE PRODUCTOS (GERENTE)
+
+# 7. RUTAS DE PRODUCTOS (GERENTE)
+
+
+
 
 
 @app.route('/productos')
@@ -908,7 +962,11 @@ def borrar_producto(id):
     return redirect(url_for('ver_productos'))
 
 
+
 # 8. RUTAS CRUD DE PROVEEDORES (GERENTE)
+
+
+# (Aquí va todo tu código de Rutas: /proveedores, /proveedores/crear, etc.)
 
 
 @app.route('/proveedores')
@@ -1093,7 +1151,11 @@ def borrar_telefono_proveedor(id, telefono):
         
     return redirect(url_for('editar_proveedor', id=id))
 
+
 # 9. RUTAS CRUD DE CLIENTES (GERENTE Y BARISTA)
+
+
+# (Aquí va todo tu código de Rutas: /clientes, /clientes/crear, etc.)
 
 
 @app.route('/clientes')
@@ -1280,7 +1342,11 @@ def borrar_cliente(id):
 
 
 
+# -----------------------------------------------------------------
 # 10. RUTAS DE ADMINISTRADOR
+# -----------------------------------------------------------------
+
+# (Aquí va todo el codigo de rutas: /admin_dashboard, /admin/usuarios, etc.)
 
 
 @app.route('/admin_dashboard')
@@ -1356,10 +1422,8 @@ def admin_borrar_usuario(id):
     return redirect(url_for('admin_ver_usuarios'))
 
 
-
-
-# -----------------------------------------------------------------
 # 11. PUNTO DE ENTRADA DE LA APLICACIÓN
-# -----------------------------------------------------------------
+
 if __name__ == '__main__':
+    # El host '0.0.0.0' es necesario para Docker
     app.run(host='0.0.0.0', port=8000, debug=True)
