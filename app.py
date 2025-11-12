@@ -1287,6 +1287,8 @@ def editar_cliente(id):
                     nuevo_frecuente = Frecuente(id_cliente=cliente.id_cliente)
                     db_dcl.add(nuevo_frecuente)
                     db_dcl.flush()
+                    # --- ESTA ES LA LÍNEA AGREGADA ---
+                    cliente.frecuente = nuevo_frecuente
                 
                 cliente.frecuente.puntos_acumulados = int(puntos_nuevos)
             
@@ -1310,7 +1312,7 @@ def editar_cliente(id):
         return redirect(url_for('ver_clientes'))
     finally:
         db_dcl.close()
-
+        
 @app.route('/clientes/borrar/<int:id>')
 @login_required
 def borrar_cliente(id):
