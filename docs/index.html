@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Cafetería (Demo)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Estilos originales de tu proyecto */
+        body {
+            background: #f3ebe3;
+            font-family: "Poppins", sans-serif;
+            animation: fadeIn 0.8s ease-in-out;
+            min-height: 100vh;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            border-radius: 22px;
+            background: #ffffffdd;
+            backdrop-filter: blur(6px);
+            animation: slideUp 0.6s ease;
+            border: 2px solid #e7d9cc;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(25px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: #4b2e1e;
+        }
+
+        label {
+            font-weight: 600;
+            color: #4b2e1e;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid #cdb7a4;
+            padding: 10px;
+        }
+        .form-control:focus {
+            border-color: #7a4e33;
+            box-shadow: 0 0 0 0.15rem rgba(122, 78, 51, 0.3);
+        }
+
+        .btn-primary {
+            background-color: #7a4e33 !important;
+            border: none;
+            border-radius: 12px;
+            padding: 10px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #5e3b24 !important;
+            transform: translateY(-2px);
+        }
+
+        .login-icon {
+            font-size: 55px;
+            color: #7a4e33;
+            display: block;
+            text-align: center;
+            margin-bottom: 12px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4" style="margin-top: 130px;">
+                <div class="card shadow p-4">
+
+                    <div class="login-icon">☕</div>
+                    <h3 class="card-title text-center mb-3">Iniciar Sesión</h3>
+
+                    <div class="alert alert-info text-center" role="alert">
+                        <small>Versión <strong>Demo Estática</strong>.<br>Ingresa cualquier dato para probar.</small>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); loginSimulado();">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" value="admin@cafe.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" value="123456" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" id="btnLogin" class="btn btn-primary">Entrar</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3 register-link">
+                        <a href="#" onclick="alert('En la versión completa, esto lleva al registro.')" style="color:#7a4e33; font-weight:600;">¿No tienes cuenta? Regístrate</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loginSimulado() {
+            const btn = document.getElementById('btnLogin');
+            btn.innerHTML = 'Conectando...';
+            btn.disabled = true;
+
+            // Simulamos una pequeña espera y redirigimos al menú
+            setTimeout(() => {
+                window.location.href = "menu.html";
+            }, 800);
+        }
+    </script>
+
+</body>
+</html>
