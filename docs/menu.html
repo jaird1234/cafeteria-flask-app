@@ -8,7 +8,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body { background: #f3ebe3; font-family: "Poppins", sans-serif; padding-top: 20px; }
-        .simulador-box { border: 2px dashed #0d6efd; background-color: #f0f7ff; border-radius: 12px; padding: 15px; margin-bottom: 25px; }
+        
+        /* ESTILO PARA LA BARRA DE SIMULACIÓN (LO QUE NO TE SALÍA) */
+        .simulador-box { 
+            border: 2px dashed #0d6efd; 
+            background-color: #f0f7ff; 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 25px; 
+        }
+
         .card { border-radius: 20px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .list-group-item { border: none; padding: 15px 20px; transition: 0.2s; border-radius: 10px; margin-bottom: 5px; cursor: pointer; }
         .list-group-item:hover { background-color: #f8f1eb; transform: translateX(5px); }
@@ -24,8 +33,11 @@
             <div class="col-md-8">
 
                 <div class="simulador-box d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div><strong><i class="bi bi-person-gear"></i> Simular Rol:</strong></div>
-                    <select class="form-select w-auto border-primary" id="selectorRol" onchange="cambiarRol()">
+                    <div>
+                        <strong><i class="bi bi-person-gear"></i> Simular Rol:</strong>
+                        <small class="text-muted ms-1">(Cambia aquí para ver diferentes menús)</small>
+                    </div>
+                    <select class="form-select w-auto border-primary shadow-sm" id="selectorRol" onchange="cambiarRol()">
                         <option value="admin">Administrador (Todo)</option>
                         <option value="gerente">Gerente</option>
                         <option value="barista">Barista</option>
@@ -41,22 +53,41 @@
                     
                     <ul class="list-group">
                         <li class="list-group-item admin-style item-menu" data-roles="admin">
-                            <a href="admin_dashboard.html" class="text-danger">Dashboard Admin</a>
+                            <a href="admin_dashboard.html" class="text-danger">
+                                <i class="bi bi-speedometer2"></i> Dashboard Admin
+                            </a>
+                        </li>
+
+                        <li class="list-group-item item-menu" data-roles="admin,gerente">
+                            <a href="ventas.html"><i class="bi bi-graph-up"></i> Reporte de Ventas</a>
                         </li>
                         <li class="list-group-item item-menu" data-roles="admin,gerente">
-                            <a href="ventas.html">Reporte de Ventas</a>
+                            <a href="proveedores.html"><i class="bi bi-truck"></i> Proveedores</a>
                         </li>
+                        <li class="list-group-item item-menu" data-roles="admin,gerente">
+                            <a href="productos.html"><i class="bi bi-box-seam"></i> Productos</a>
+                        </li>
+
                         <li class="list-group-item item-menu" data-roles="admin,gerente,barista">
-                            <a href="pos.html">Punto de Venta (POS)</a>
+                            <a href="pos.html"><i class="bi bi-cup-hot"></i> Punto de Venta (POS)</a>
                         </li>
                          <li class="list-group-item item-menu" data-roles="admin,gerente,barista">
-                            <a href="clientes.html">Clientes</a>
+                            <a href="clientes.html"><i class="bi bi-people"></i> Clientes</a>
                         </li>
+                        <li class="list-group-item item-menu" data-roles="admin,gerente,barista">
+                            <a href="empleados.html"><i class="bi bi-person-badge"></i> Empleados</a>
+                        </li>
+
                         <li class="list-group-item item-menu" data-roles="cliente">
-                            <a href="#" onclick="alert('Perfil Cliente')">Mi Perfil</a>
+                            <a href="#" onclick="alert('Esta es la vista de perfil del cliente')">
+                                <i class="bi bi-person-circle"></i> Mi Perfil
+                            </a>
                         </li>
                     </ul>
-                    <div class="mt-4 text-center"><a href="index.html" class="btn btn-outline-secondary btn-sm">Salir</a></div>
+
+                    <div class="mt-4 text-center">
+                        <a href="index.html" class="btn btn-outline-secondary btn-sm">Cerrar Sesión</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,16 +95,36 @@
 
     <script>
         function cambiarRol() {
+            // 1. Ver qué eligió el usuario en la lista de arriba
             const rol = document.getElementById('selectorRol').value;
+            
+            // 2. Cambiar la etiqueta visual (Badge)
             const badge = document.getElementById('badgeRol');
             badge.textContent = rol.toUpperCase();
             
-            // Lógica de filtrado
-            document.querySelectorAll('.item-menu').forEach(item => {
-                const permitidos = item.getAttribute('data-roles');
-                item.style.display = permitidos.includes(rol) ? 'block' : 'none';
+            // Cambiar colores del badge
+            badge.className = 'rol-badge text-white'; 
+            if(rol === 'admin') badge.classList.add('bg-danger');
+            else if(rol === 'gerente') badge.classList.add('bg-primary');
+            else if(rol === 'barista') { badge.classList.add('bg-warning'); badge.classList.remove('text-white'); }
+            else badge.classList.add('bg-success');
+
+            // 3. MOSTRAR U OCULTAR BOTONES
+            const botones = document.querySelectorAll('.item-menu');
+            
+            botones.forEach(boton => {
+                const rolesPermitidos = boton.getAttribute('data-roles');
+                
+                // Si el rol elegido está en la lista permitida, se muestra
+                if (rolesPermitidos.includes(rol)) {
+                    boton.style.display = 'block';
+                } else {
+                    boton.style.display = 'none';
+                }
             });
         }
+
+        // Ejecutar al inicio para que cargue como Admin por defecto
         document.addEventListener('DOMContentLoaded', cambiarRol);
     </script>
 </body>
